@@ -33,14 +33,14 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
-        #     Document:
-        #         type: attribute
-        #         is_bundle: false
-        #         dir: '%kernel.project_dir%/src/Document'
-        #         prefix: 'App\Document'
-        #         alias: Document
-        # controller_resolver:
-        #     auto_mapping: true
+            Document:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Document'
+                prefix: 'App\Document'
+                alias: Document
+        controller_resolver:
+            auto_mapping: true
 
 when@test:
     doctrine:

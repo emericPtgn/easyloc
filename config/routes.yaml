@@ -3,3 +3,18 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+test_commande:
+    path: /test_commande
+    controller: App\Controller\CommandeController::testCommande
+    methods: ['POST', 'GET']
+
+list_customer:
+    path: /api/customers
+    controller: App\Controller\CustomerController::getCustomerList
+    methods: ['GET']
+
+create_customer:
+    path: /api/customers
+    controller: App\Controller\CustomerController::createCustomer
+    methods: ['POST']

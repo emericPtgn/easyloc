@@ -11,15 +11,27 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class Customer
 {
     #[MongoDB\Id(strategy:"AUTO")]
+    /**
+     * @SerializedName("id")
+     */
     protected string $id;
 
     #[MongoDB\Field(type: 'string', name: 'firstName')]
+    /**
+     * @SerializedName("firstName")
+     */
     protected string $firstName;
 
     #[MongoDB\Field(type: 'string', name: 'lastName')]
+    /**
+     * @SerializedName("lastName")
+     */
     protected string $lastName;
 
     #[MongoDB\Field(type: 'string', name: 'adress')]
+    /**
+     * @SerializedName("lastName")
+     */
     protected string $adress;
 
     #[MongoDB\Field(type: 'string', name: 'permitNumber')]
@@ -105,7 +117,7 @@ class Customer
     {
         if (!$this->contracts->contains($contract)) {
             $this->contracts->add($contract);
-            $contract->setCustomer($this);
+            $contract->setCustomerId($this);
         }
 
         return $this;
@@ -115,8 +127,8 @@ class Customer
     {
         if ($this->contracts->removeElement($contract)) {
             // set the owning side to null (unless already changed)
-            if ($contract->getCustomer() === $this) {
-                $contract->setCustomer(null);
+            if ($contract->getCustomerId() === $this) {
+                $contract->setCustomerId(null);
             }
         }
 

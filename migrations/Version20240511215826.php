@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240511141316 extends AbstractMigration
+final class Version20240511215826 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,8 +20,8 @@ final class Version20240511141316 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE contract ALTER COLUMN signDateTime DATETIME2(6) NOT NULL');
-        $this->addSql('ALTER TABLE contract ALTER COLUMN returningDateTime DATETIME2(6) NOT NULL');
+        $this->addSql('ALTER TABLE commande ALTER COLUMN id INT NOT NULL');
+        $this->addSql('ALTER TABLE commande ADD PRIMARY KEY (id)');
     }
 
     public function down(Schema $schema): void
@@ -37,7 +37,7 @@ final class Version20240511141316 extends AbstractMigration
         $this->addSql('CREATE SCHEMA db_owner');
         $this->addSql('CREATE SCHEMA db_securityadmin');
         $this->addSql('CREATE SCHEMA dbo');
-        $this->addSql('ALTER TABLE contract ALTER COLUMN signDateTime DATETIME2(6)');
-        $this->addSql('ALTER TABLE contract ALTER COLUMN returningDateTime DATETIME2(6)');
+        $this->addSql('DROP INDEX [primary] ON commande');
+        $this->addSql('ALTER TABLE commande ALTER COLUMN id INT NOT NULL');
     }
 }
