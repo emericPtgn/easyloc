@@ -8,6 +8,7 @@ use App\Document\Product;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 
+
 class MyEventSubscriber
 {
 
