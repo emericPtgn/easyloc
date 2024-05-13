@@ -4,17 +4,49 @@ controllers:
         namespace: App\Controller
     type: attribute
 
-test_commande:
-    path: /test_commande
-    controller: App\Controller\CommandeController::testCommande
-    methods: ['POST', 'GET']
-
-list_customer:
-    path: /api/customers
-    controller: App\Controller\CustomerController::getCustomerList
-    methods: ['GET']
-
 create_customer:
     path: /api/customers
     controller: App\Controller\CustomerController::createCustomer
     methods: ['POST']
+
+update_customer:
+    path: /api/customers/{id}
+    controller: App\Controller\CustomerController::updateCustomer
+    methods: ['PUT']
+
+delete_customer:
+    path: /api/customers/{id}
+    controller: App\Controller\CustomerController::deleteCustomer
+    methods: ['DELETE']
+
+get_customer:
+    path: /api/customers/{firstName}/{lastName}
+    controller: App\Controller\CustomerController::getCustomer
+    methods: ['GET']
+
+get_customer_detail:
+    path: /api/customers/
+    controller: App\Controller\CustomerController::getCustomerDetails
+    methods: ['GET']
+
+# ------ VEHICLE ------
+
+create_vehicle:
+    path: /api/vehicle
+    controller: App\Controller\VehicleController::createVehicle
+    methods: ['POST']
+
+update_vehicle:
+    path: /api/vehicle
+    controller: App\Controller\VehicleController::updateVehicle
+    methods: ['PUT']
+
+delete_vehicle: 
+    path: /api/vehicle
+    controller: App\Controller\VehicleController::deleteVehicle
+    methods: ['DELETE']
+
+get_vehicle: 
+    path: /api/vehicle
+    controller: App\Controller\VehicleController::getVehicle
+    methods: ['GET']

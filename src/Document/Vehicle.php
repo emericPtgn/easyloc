@@ -33,19 +33,10 @@ class Vehicle {
         $this->contracts = new ArrayCollection();
     }
 
-    public function getArrayCopy(): array
-    {
-        return [
-            'id' => $this->id,
-            'km' => $this->km,
-            'informations' => $this->informations,
-            'plateNumber' => $this->plateNumber,
-        ];
-    }
-
     public function __toString() {
         return $this->id;
     }
+
     public function getId(){
         return $this->id;
     }

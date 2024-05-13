@@ -5,6 +5,7 @@ namespace App\Document;
 use App\Entity\Contract;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 #[MongoDB\Document]
@@ -35,6 +36,8 @@ class Customer
     protected string $adress;
 
     #[MongoDB\Field(type: 'string', name: 'permitNumber')]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 6, max: 6)]
     protected string $permitNumber;
 
     /**
@@ -51,7 +54,7 @@ class Customer
     
     public function __toString(): string
     {
-        return (string) $this->id;
+        return (string) $this->Customer;
     }
 
     public function getId(): string
