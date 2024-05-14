@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
 class Contract
@@ -14,6 +16,7 @@ class Contract
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "id", type: "integer")]
+    #[Groups(['billing'])]
     private ?int $id = null;
 
     #[ORM\Column(name: "customerId", type: "string", length: 255)]
@@ -31,7 +34,7 @@ class Contract
     #[ORM\Column(name: "locEndDateTime", type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $locEndDateTime = null;
 
-    #[ORM\Column(name: "returningDateTime", type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(name: "returningDateTime", type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $returningDateTime = null;
 
     #[ORM\Column(name: "price", type: Types::DECIMAL, precision: 10, scale: 2)]
@@ -125,7 +128,7 @@ class Contract
         return $this->returningDateTime;
     }
 
-    public function setReturningDateTime(\DateTimeInterface $returningDateTime): static
+    public function setReturningDateTime(?\DateTimeInterface $returningDateTime): static
     {
         $this->returningDateTime = $returningDateTime;
 

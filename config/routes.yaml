@@ -4,23 +4,26 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+
+# ----- CUSTOMER -----
+
 create_customer:
     path: /api/customers
     controller: App\Controller\CustomerController::createCustomer
     methods: ['POST']
 
 update_customer:
-    path: /api/customers/{id}
+    path: /api/customers
     controller: App\Controller\CustomerController::updateCustomer
     methods: ['PUT']
 
 delete_customer:
-    path: /api/customers/{id}
+    path: /api/customers
     controller: App\Controller\CustomerController::deleteCustomer
     methods: ['DELETE']
 
 get_customer:
-    path: /api/customers/{firstName}/{lastName}
+    path: /api/customers
     controller: App\Controller\CustomerController::getCustomer
     methods: ['GET']
 
@@ -50,3 +53,49 @@ get_vehicle:
     path: /api/vehicle
     controller: App\Controller\VehicleController::getVehicle
     methods: ['GET']
+
+# ----- CONTRACT -----
+
+create_contract:
+    path: /api/contract
+    controller: App\Controller\ContractController::createContract
+    methods: ['POST']
+
+update_contract:
+    path: /api/contract
+    controller: App\Controller\ContractController::updateContract
+    methods: ['PUT']
+
+
+delete_contract:
+    path: /api/contract
+    controller: App\Controller\ContractController::deleteContract
+    methods: ['DELETE']
+
+
+get_contract:
+    path: /api/contract
+    controller: App\Controller\ContractController::getContract
+    methods: ['GET']
+
+# ----- BILLING -----
+
+create_billing:
+    path: /api/billing
+    controller: App\Controller\BillingController::createBilling
+    methods: ['POST']
+
+update_billing:
+    path: /api/billing
+    controller: App\Controller\BillingController::updateBilling
+    methods: ['PUT']
+
+delete_billing:
+    path: /api/billing
+    controller: App\Controller\BillingController:deleteBilling
+    methods: ['DELETE']
+
+get_billing:
+    path: /api/billing
+    controller: App\Controller\BillingController::getBilling
+

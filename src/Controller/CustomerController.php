@@ -20,19 +20,11 @@ class CustomerController extends AbstractController
         $this->customerService = $customerService;
     }
 
-    #[Route('/api/customers/{id}', name:'update_customer', methods: ['PUT'])]
-    public function updateCustomer(Request $request) : JsonResponse {
-        // récupérer le contenu de la requête
-        $requestData = json_decode($request->getContent(), true);
-        // récupérer le paramètre de requête "id"
-        $id = $request->attributes->get('id');
-        // injecter méthode du service customerService et récupérer sa réponse
-        $customer = $this->customerService->updateCustomer($id, $requestData);
-        return new JsonResponse($customer, Response::HTTP_OK, [], true);
-    }
-
     #[Route('/api/customers', name: 'create_customer', methods: ['POST'])]
-    public function createCustomer(Request $request) : JsonResponse {
+    public function createCustomer(Request $request) {
+        if($request->query->get('action') === 'create-collection'){
+            return $this->customerService->createCollection($request);
+        }
         // récupère le contenu de la requête
         $requestData = json_decode($request->getContent(), true);
         // validation
@@ -41,13 +33,15 @@ class CustomerController extends AbstractController
         return $this->json(['customer' => $customer]);
     }
 
-    #[Route('/api/customers/{id}', name: 'delete_customer', methods: ['DELETE'])]
-    public function deleteCustomer(Request $request, $id) : Response {
-        if($this->customerService->deleteCustomer($id)){
-            return new Response ('success : customer delete');
-        } else {
-            return new Response ('operation failed, try again');
-        }
+    #[Route('/api/customers', name:'update_customer', methods: ['PUT'])]
+    public function updateCustomer(Request $request) : JsonResponse {
+        // injecter méthode du service customerService et récupérer sa réponse
+        return $this->customerService->updateCustomer($request);
+    }
+
+    #[Route('/api/customers', name: 'delete_customer', methods: ['DELETE'])]
+    public function deleteCustomer(Request $request) {
+        return $this->customerService->deleteCustomer($request);
     }
 
     #[Route('/api/customers/{firstName}/{lastName}', name: 'get_customer', methods: ['GET'])]
@@ -60,9 +54,8 @@ class CustomerController extends AbstractController
     }
 
     #[Route('/api/customers', name: 'get_customer_detail', methods: ['GET'])]
-    public function getCustomerDetails(Request $request, LoggerInterface $logger) : JsonResponse {
-        $serializeCustomer = $this->customerService->getCustomerDetails($request, $logger);
-        return new JsonResponse($serializeCustomer, 200, [], true);
+    public function getCustomerDetails(Request $request) {
+        return $this->customerService->getCustomer($request);
     }
 
 }

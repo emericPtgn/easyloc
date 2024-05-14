@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Service\Vehicle;
-use Exception;
 use App\Document\Vehicle;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
+use Doctrine\ODM\MongoDB\Mapping\Annotations\Collections;
 
 
 class VehicleService {
@@ -20,21 +19,52 @@ class VehicleService {
         $this->serializer = $serializer;
     }
 
-    public function createVehicle(array $vehicleDatas) : Vehicle {
+    public function createVehicle(Request $request) : JsonResponse {
+        $requestDatas = json_decode($request->getContent(), true);
         $vehicle = new Vehicle();
-        if(isset($vehicleDatas['informations'])){
-            $vehicle->setInformations($vehicleDatas['informations']);
+        if(isset($requestDatas['informations'])){
+            $vehicle->setInformations($requestDatas['informations']);
         }
-        if(isset($vehicleDatas['km'])){
-            $vehicle->setKm($vehicleDatas['km']);
+        if(isset($requestDatas['km'])){
+            $vehicle->setKm($requestDatas['km']);
         }
-        if(isset($vehicleDatas['plateNumber'])){
-            $vehicle->setPlateNumber($vehicleDatas['plateNumber']);
+        if(isset($requestDatas['plateNumber'])){
+            $vehicle->setPlateNumber($requestDatas['plateNumber']);
         }
         $this->dm->persist($vehicle);
         $this->dm->flush();
 
-        return $vehicle;
+        $serializeVehicle = $this->serializer->serialize($vehicle, 'json');
+        return new JsonResponse($serializeVehicle, 200, [], true);
+    }
+
+    public function collectionExists(string $collectionName): bool
+    {
+        $database = $this->dm->getDocumentDatabase(Vehicle::class);
+        // Obtenir la liste des collections dans la base de données
+        $collections = $database->listCollections();
+
+        // Parcourir les collections pour vérifier si la collection spécifiée existe déjà
+        foreach ($collections as $collectionInfo) {
+            if ($collectionInfo->getName() === $collectionName) {
+                return true; // La collection existe déjà
+            }
+        }
+
+        return false; // La collection n'existe pas
+    }
+
+    public function createCollection(Request $request)
+    {
+        $collectionName = 'Vehicle';
+        if(!$this->collectionExists($collectionName)){
+            $this->dm->getSchemaManager()->createDocumentCollection($collectionName);
+            return new Response('Collection created successfully');
+        } else {
+            // Collection déjà existante, pas besoin de créer une nouvelle collection
+            return new Response('Collection already exists');
+        }
+    
     }
 
     public function updateVehicle(string $id, array $vehicleDatas) : JsonResponse {
@@ -83,14 +113,14 @@ class VehicleService {
     }
 
     public function countVehicle($km) : JsonResponse {
-        // Vérifiez si la valeur du paramètre est numérique
+        // Vérifier si la valeur du paramètre est numérique
         if (!is_numeric($km)) {
             throw new \InvalidArgumentException('The filter value must be numeric.');
         }
-        // Convertissez la valeur en entier
+        // Convertir la valeur en entier
         $filterValue = (int)$km;
         
-        // Utilisez la valeur filtrée pour rechercher les véhicules
+        // Utiliser la valeur filtrée pour rechercher les véhicules
         $qb = $this->dm->createQueryBuilder(Vehicle::class)
         ->field('km')->gte($km);
         $query = $qb->getQuery();

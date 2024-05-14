@@ -2,20 +2,27 @@
 
 namespace App\Service\Customer;
 use App\Document\Customer;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Mapping\Annotations\Collection;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class CustomerService {
     private $dm;
     private $serializer;
+    private $connection;
 
-    public function __construct(DocumentManager $dm, SerializerInterface $serializer){
+    public function __construct(DocumentManager $dm, SerializerInterface $serializer, Connection $connection){
         $this->dm = $dm;
         $this->serializer = $serializer;
+        $this->connection = $connection;
     }
 
     public function getCustomerList() : JsonResponse {
@@ -24,6 +31,33 @@ class CustomerService {
         $serializedCustomers = $this->serializer->serialize($customers, 'json');
         // Retourne la réponse JSON
         return new JsonResponse($serializedCustomers, Response::HTTP_OK, [], true);
+    }
+
+    public function collectionExist(string $collectionName) : bool
+    {
+        // instancie un objet Database de Customer
+        $database = $this->dm->getDocumentDatabase(Customer::class);
+        // je prends la liste des collections existantes
+        $collections = $database->listCollections();
+        // boucle verifie si nom collection correspond nom collection existante
+        foreach ($collections as $collection) {
+            if($collection->getName() === $collectionName){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function createCollection(Request $request) {
+        // définir le nom de la collection
+        $collectionName = 'Customer';
+        // si le nom de ma collection ne correspond à une aucune collection existante alors je créé la collection
+        if(!$this->collectionExist($collectionName))
+        {
+            $this->dm->getSchemaManager()->createDocumentCollection($collectionName);
+            return new Response ('Collection created successfully');
+        } 
+        return new Response('Seems this collection already exist');
     }
 
     public function createCustomer(array $customerData): Customer {
@@ -41,25 +75,30 @@ class CustomerService {
         return $customer;
     }
 
-    public function updateCustomer(string $id, array $customerData): JsonResponse {
-        $customer = $this->dm->getRepository(Customer::class)->find($id);
-    
-        if (!$customer) {
-            throw new \InvalidArgumentException('Customer not found for ID ' . $id);
+    public function updateCustomer(Request $request): JsonResponse {
+        // vérifier si il y a un paramètre de requête ID
+        $id = $request->query->get('id');
+        if(!$id){
+            throw new \InvalidArgumentException('oups something went wrong check your ID');
         }
+        $customer = $this->dm->getRepository(Customer::class)->find($id);
+        if(!$customer){
+            throw new NotFoundHttpException('oups no customer found with id : '. $id);
+        }
+        $requestDatas = json_decode($request->getContent(), true);
     
         // Mise à jour des données du client si elles sont fournies
-        if (isset($customerData['firstName'])) {
-            $customer->setFirstName($customerData['firstName']);
+        if (isset($requestDatas['firstName'])) {
+            $customer->setFirstName($requestDatas['firstName']);
         }
-        if (isset($customerData['lastName'])) {
-            $customer->setLastName($customerData['lastName']);
+        if (isset($requestDatas['lastName'])) {
+            $customer->setLastName($requestDatas['lastName']);
         }
-        if (isset($customerData['adress'])) {
-            $customer->setAdress($customerData['adress']);
+        if (isset($requestDatas['adress'])) {
+            $customer->setAdress($requestDatas['adress']);
         }
-        if (isset($customerData['permitNumber'])) {
-            $customer->setPermitNumber($customerData['permitNumber']);
+        if (isset($requestDatas['permitNumber'])) {
+            $customer->setPermitNumber($requestDatas['permitNumber']);
         }
         $this->dm->flush();
 
@@ -69,29 +108,33 @@ class CustomerService {
         return new JsonResponse($serializeCustomer, 200, [], true);
     }
 
-    public function deleteCustomer(string $id) : Response {
-        $customer = $this->dm->getRepository(Customer::class)->find($id);
-        if (!$customer) {
-            throw new \InvalidArgumentException('Customer not found for ID ' . $id);
+    public function deleteCustomer(Request $request) : Response {
+        $id = $request->query->get('id');
+        if(!$id){
+            throw new InvalidArgumentException('oups something went wrong check your ID');
         }
         $customer = $this->dm->getRepository(Customer::class)->find($id);
+        if (!$customer) {
+            throw new InvalidArgumentException('Customer not found for ID ' . $id);
+        }
         $this->dm->remove($customer);
         $this->dm->flush();
         return new Response ('operation successfull : customer deleted');
     }
 
     // recherche client à partir du nom / prénom passé en paramètres au controlleur
-    public function getCustomer(Request $request, LoggerInterface $logger) : JsonResponse {
+    public function getCustomer(Request $request) : JsonResponse {
 
-        $firstName = $request->attributes->get('firstName');
-        $lastName = $request->attributes->get('lastName');
+        $firstName = $request->query->get('firstName');
+        $lastName = $request->query->get('lastName');
+        if(!$firstName & !$lastName){
+            throw new InvalidArgumentException('oups something went wrong with your firstname or lastname');
+        }
         $customer = $this->dm->getRepository(Customer::class)->findOneBy(['firstName' => $firstName, 'lastName' => $lastName]);
-
-        // Utiliser les paramètres d'URL 
-        $logger->info('First Name: ' . $firstName);
-        $logger->info('Last Name: ' . $lastName);
+        if(!$customer){
+            throw new NotFoundHttpException('no customer found with firstname : ' . $firstName . 'and lastname : '. $lastName);
+        }
         $serializeCustomer = $this->serializer->serialize($customer, 'json');
-
         return new JsonResponse($serializeCustomer, 200, [], true);
         }
         

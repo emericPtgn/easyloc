@@ -2,15 +2,12 @@
 
 namespace App\Controller;
 
-use App\Document\Vehicle;
 use App\Service\Vehicle\VehicleService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class VehicleController extends AbstractController
 {
@@ -21,10 +18,10 @@ class VehicleController extends AbstractController
     }
 
     #[Route('/api/vehicle', name: 'create_vehicle', methods: ['POST'])]
-    public function createVehicle(Request $request): JsonResponse {
-        $requestDatas = json_decode($request->getContent(), true);
-        $vehicle = $this->vehicleService->createVehicle($requestDatas);
-        return new JsonResponse($vehicle, 200, [], true);
+    public function createVehicle(Request $request) {
+        if($request->query->get('action')  === 'create-collection'){
+            return $this->vehicleService->createCollection($request);
+        } return $this->vehicleService->createVehicle($request);
     }
 
     #[Route('/api/vehicle', name: 'update_vehicle', methods: ['PUT'])]
