@@ -19,7 +19,7 @@ class Billing
 
     #[ORM\ManyToOne(inversedBy: 'billings')]
     #[ORM\JoinColumn(name: "contractId", referencedColumnName: "id", nullable: false)]
-    #[Groups(['billing'])]
+    #[Ignore]
 
     private ?Contract $contract;
 

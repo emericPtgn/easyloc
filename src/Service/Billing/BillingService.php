@@ -24,7 +24,7 @@ class BillingService {
         $this->connection = $connection;
     }
 
-    public function createTable(): Response
+    public function createTable(Request $request): Response
     {
         $schemaManager = $this->connection->getSchemaManager();
         $tableName = 'billing';
@@ -56,14 +56,15 @@ class BillingService {
     }
 
 
-    public function createBilling(Request $request) : JsonResponse {
-
-        $requestDatas = json_decode($request->getContent(), true);
-        $billing = new Billing();
+    public function createBilling(Request $request) 
+    {
         $id = $request->query->get('contractId');
         if(!$id){
-            throw new \InvalidArgumentException('oups something went wrong, check your ID');
+            return new Response ('oups something went wrong, check your ID :'. $id);
         }
+        $requestDatas = json_decode($request->getContent(), true);
+        $billing = new Billing();
+
         $contract = $this->em->getRepository(Contract::class)->find($id);
         if(!$contract){
             throw new \InvalidArgumentException('oups something went wrong, no contract found with this ID');
@@ -80,7 +81,6 @@ class BillingService {
         ]);        
         
         return new JsonResponse($serializeBilling, Response::HTTP_OK, [], true);
-   
     }
 
 
@@ -137,18 +137,28 @@ class BillingService {
     }
 
     public function getBilling(Request $request) : JsonResponse {
-        $id = $request->query->get('id');
-        if(!$id){
+        $billingId = $request->query->get('billingId');
+        if(!$billingId){
             throw new \InvalidArgumentException('oups something went wrong, please check your ID');
         }
-        $billing = $this->em->getRepository(Billing::class)->find($id);
+        $billing = $this->em->getRepository(Billing::class)->find($billingId);
         if(!$billing){
-            throw new NotFoundHttpException('no billing found with ID : ' . $id);
+            throw new NotFoundHttpException('no billing found with ID : ' . $billingId);
         }
-        $serializeBilling = $this->serializer->serialize($billing, 'json', [
+        $serializeBilling = [];
+        $data = [
+            'id' => $billing->getId(),
+            'amount' => $billing->getAmount(),
+            'contractId' => $billing->getContract()->getId()
+        ];
+        $serializeBilling[] = $data;
+
+/*         $serializeBilling = $this->serializer->serialize($serializeBilling, 'json', [
             'groups' => ['billing']
-        ]);
-        return new JsonResponse($serializeBilling, 200, [], true);
+        ]); */
+
+        return new JsonResponse($serializeBilling, 200, [], false);
     }
+
 
 }

@@ -19,23 +19,12 @@ class BillingController extends AbstractController
         $this->billingService = $billingService;
     }
 
-    #[Route('/api/billing', name: 'create_table', methods: ['POST'] )]
-    public function createTable(Request $request)
-    {
-        $action = $request->query->get('action');
-        if($action === 'create-table'){
-            return $this->billingService->createTable();
-        } return;
-        
-    }
-
     #[Route('api/billing', name: 'create_billing', methods: ['POST'])]
     public function createBilling(Request $request)
     {
         if($request->query->get('action') === 'create-table'){
-            return $this->createTable($request);
+            return $this->billingService->createTable($request);
         }
-
         return $this->billingService->createBilling($request);
     }
 

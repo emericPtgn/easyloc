@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
@@ -16,34 +17,43 @@ class Contract
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "id", type: "integer")]
-    #[Groups(['billing'])]
+    #[Groups(['contract'])]
     private ?int $id = null;
 
     #[ORM\Column(name: "customerId", type: "string", length: 255)]
+    #[Groups(['contract'])]
     private ?string $customerId = null;
 
     #[ORM\Column(name: "vehicleId", type: "string", length: 255)]
+    #[Groups(['contract'])]
     private ?string $vehicleId = null;
 
     #[ORM\Column(name: "signDateTime", type: Types::DATETIME_MUTABLE)]
+    #[Groups(['contract'])]
     private ?\DateTimeInterface $signDateTime = null;
 
     #[ORM\Column(name: "locBeginDateTime", type: Types::DATETIME_MUTABLE)]
+    #[Groups(['contract'])]
     private ?\DateTimeInterface $locBeginDateTime = null;
 
     #[ORM\Column(name: "locEndDateTime", type: Types::DATETIME_MUTABLE)]
+    #[Groups(['contract'])]
     private ?\DateTimeInterface $locEndDateTime = null;
 
     #[ORM\Column(name: "returningDateTime", type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['contract'])]
     private ?\DateTimeInterface $returningDateTime = null;
 
     #[ORM\Column(name: "price", type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['contract'])]
     private ?string $price = null;
 
     /**
      * @var Collection<int, Billing>
      */
     #[ORM\OneToMany(targetEntity: Billing::class, mappedBy: 'contract')]
+    #[MaxDepth(1)] // Limite la profondeur de sérialisation à 1
+    #[Groups(['contract'])]
     private Collection $billings;
 
     public function __construct()

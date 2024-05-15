@@ -73,9 +73,9 @@ delete_contract:
     methods: ['DELETE']
 
 
-get_contract:
+get_contracts:
     path: /api/contract
-    controller: App\Controller\ContractController::getContract
+    controller: App\Controller\ContractController::getContracts
     methods: ['GET']
 
 # ----- BILLING -----
