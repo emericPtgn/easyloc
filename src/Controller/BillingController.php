@@ -5,7 +5,6 @@ namespace App\Controller;
 
 use App\Service\Billing\BillingService;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +39,7 @@ class BillingController extends AbstractController
     }
 
     #[Route('/api/billing', name: 'get_billing', methods: ['GET'])]
-    public function getBilling(Request $request) : JsonResponse
+    public function getBilling(Request $request)
     {
         return $this->billingService->getBilling($request);
     }

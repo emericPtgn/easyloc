@@ -6,22 +6,24 @@ use App\Entity\Contract;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Connection;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BillingService {
     private $em;
     private $serializer;
     private $connection;
+    private $logger;
 
-    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, Connection $connection){
+    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, Connection $connection, LoggerInterface $logger){
         $this->em = $em;
         $this->serializer = $serializer;
         $this->connection = $connection;
+        $this->logger = $logger;
     }
 
     public function createTable(Request $request): Response
@@ -62,14 +64,14 @@ class BillingService {
         if(!$id){
             return new Response ('oups something went wrong, check your ID :'. $id);
         }
-        $requestDatas = json_decode($request->getContent(), true);
-        $billing = new Billing();
-
         $contract = $this->em->getRepository(Contract::class)->find($id);
         if(!$contract){
             throw new \InvalidArgumentException('oups something went wrong, no contract found with this ID');
         }
+        $billing = new Billing(); 
         $billing->setContract($contract);
+        
+        $requestDatas = json_decode($request->getContent(), true);
         if(isset($requestDatas['amount'])){
             $billing->setAmount($requestDatas['amount']);
         }
@@ -115,6 +117,8 @@ class BillingService {
 
     public function deleteBilling(Request $request) : Response {
         $id = $request->query->get('id');
+        $this->logger->info($id);
+
         $ids = json_decode($request->getContent(), true);
         if($ids){
             foreach ($ids as $id) {
@@ -137,6 +141,10 @@ class BillingService {
     }
 
     public function getBilling(Request $request) : JsonResponse {
+        $contractId = $request->query->get('contractId');
+        if($contractId){
+            return $this->getBillingFromContractId($contractId, $request);
+        }   
         $billingId = $request->query->get('billingId');
         if(!$billingId){
             throw new \InvalidArgumentException('oups something went wrong, please check your ID');
@@ -158,6 +166,19 @@ class BillingService {
         ]); */
 
         return new JsonResponse($serializeBilling, 200, [], false);
+    }
+
+    public function getBillingFromContractId(string $contractId, Request $request) : JsonResponse
+    {
+        $contract = $this->em->getRepository(Contract::class)->find($contractId);
+        if(!$contract){
+            throw new \InvalidArgumentException('no contract found with this ID');
+        }
+        $billings = $contract->getBillings();
+        $serializedBillings = $this->serializer->serialize($billings, 'json', [
+            'groups' => ['billing']
+        ]);
+        return new JsonResponse($serializedBillings, Response::HTTP_OK, [], true);
     }
 
 

@@ -92,7 +92,7 @@ update_billing:
 
 delete_billing:
     path: /api/billing
-    controller: App\Controller\BillingController:deleteBilling
+    controller: App\Controller\BillingController::deleteBilling
     methods: ['DELETE']
 
 get_billing:
