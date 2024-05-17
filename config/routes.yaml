@@ -99,3 +99,15 @@ get_billing:
     path: /api/billing
     controller: App\Controller\BillingController::getBilling
 
+# ---- auth -----
+
+app_register:
+    path : /api/register
+    controller: App\Controller\RegistrationController::register
+
+app_onboarding:
+    path: /api/welcome
+    controller: App\Controller\RegistrationController::onboarding
+
+api_login_check:
+    path: /api/login_check

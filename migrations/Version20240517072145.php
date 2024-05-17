@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240511215826 extends AbstractMigration
+final class Version20240517072145 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -35,6 +35,5 @@ final class Version20240511215826 extends AbstractMigration
         $this->addSql('CREATE SCHEMA db_owner');
         $this->addSql('CREATE SCHEMA db_securityadmin');
         $this->addSql('CREATE SCHEMA dbo');
-
     }
 }
