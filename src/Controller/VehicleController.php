@@ -47,6 +47,7 @@ class VehicleController extends AbstractController
 
     #[Route('/api/vehicle', name: 'get_vehicle', methods: ['GET'])]
     public function getVehicle(Request $request) : JsonResponse {
+        $this->denyAccessUnlessGranted("ROLE_USER");
         $plateNumber = $request->query->get('plateNumber');
         $km = $request->query->get('km');
         if($plateNumber){

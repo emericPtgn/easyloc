@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello OrderController!{% endblock %}
+{% block title %}Hello LoginController!{% endblock %}
 
 {% block body %}
 <style>
@@ -11,10 +11,13 @@
 <div class="example-wrapper">
     <h1>Hello {{ controller_name }}! ✅</h1>
 
+    {% if token %}
+    {{token}}
+    {% endif %}
     This friendly message is coming from:
     <ul>
-        <li>Your controller at <code>/Users/emericp/Documents/easyloc/src/Controller/OrderController.php</code></li>
-        <li>Your template at <code>/Users/emericp/Documents/easyloc/templates/order/index.html.twig</code></li>
+        <li>Your controller at <code>/Users/emericp/Documents/easyloc/src/Controller/LoginController.php</code></li>
+        <li>Your template at <code>/Users/emericp/Documents/easyloc/templates/login/index.html.twig</code></li>
     </ul>
 </div>
 {% endblock %}

@@ -22,7 +22,7 @@ class RegistrationController extends AbstractController
     {
     }
 
-    #[Route('/api/register', name: 'app_register')]
+    #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
         $user = new User();
@@ -77,11 +77,11 @@ class RegistrationController extends AbstractController
         // @TODO Change the redirect on success and handle or remove the flash message in your templates
         $this->addFlash('success', 'Your email address has been verified.');
 
-        return $this->redirectToRoute('app_register');
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/api/welcome', name: 'app_onboarding')]
     public function onboarding(Request $request){
-        return $this->render('login/onboarding.html.twig');
+        return $this->render('notemplate');
     }
 }

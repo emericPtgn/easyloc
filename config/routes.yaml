@@ -102,12 +102,24 @@ get_billing:
 # ---- auth -----
 
 app_register:
-    path : /api/register
+    path : /register
     controller: App\Controller\RegistrationController::register
-
-app_onboarding:
-    path: /api/welcome
-    controller: App\Controller\RegistrationController::onboarding
+    stateless: false
 
 api_login_check:
     path: /api/login_check
+    controller: App\Controller\HomePageController::index
+    stateless: false
+
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login
+
+app_logout:
+    path: /logout
+    controller: App\Controller\SecurityController::logout
+
+homepage:
+    path: /
+    controller: App\Controller\HomepageController::index
+
