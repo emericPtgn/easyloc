@@ -20,8 +20,9 @@ class JwtTokenListener
     {
         // Récupérer la requête entrante
         $request = $event->getRequest();
-        $username = "petitgenet.emeric@gmail.com";
-        $password = "MDP1995";
+        $requestDatas = json_decode($request->getContent(), true);
+        $username = $requestDatas['username'];
+        $password = $requestDatas['password'];
 
         // Récupérer le token JWT
         $token = $this->apiTokenService->getToken($username, $password);
