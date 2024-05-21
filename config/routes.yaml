@@ -12,6 +12,11 @@ create_customer:
     controller: App\Controller\CustomerController::createCustomer
     methods: ['POST']
 
+create_table_customer:
+    path: /api/customers/create-table
+    controller: App\Controller\CustomerController::createTableCustomer
+    methods: ['POST']
+
 update_customer:
     path: /api/customers
     controller: App\Controller\CustomerController::updateCustomer
@@ -23,7 +28,7 @@ delete_customer:
     methods: ['DELETE']
 
 get_customer:
-    path: /api/customers
+    path: /api/customers/{firstName}-{lastName}
     controller: App\Controller\CustomerController::getCustomer
     methods: ['GET']
 
@@ -32,11 +37,32 @@ get_customer_detail:
     controller: App\Controller\CustomerController::getCustomerDetails
     methods: ['GET']
 
+get_contract_from_customerId:
+    path: /api/customers/{customerId}/contracts
+    controller: App\Controller\CustomerController::getContractFromCustomerId
+    methods: ['GET']
+
+get_current_contracts_from_customer:
+    path: /api/customers/{customerId}/contracts/current
+    controller: App\Controller\CustomerController::getCurrentContracts
+    methods: ['GET']
+
+get_late_contract_average_rate_per_customer:
+    path: /api/customers/contracts/late/on-average
+    controller: App\Controller\CustomerController::getLateContractOnAverage
+    methods: ['GET']
+
+
 # ------ VEHICLE ------
 
 create_vehicle:
     path: /api/vehicle
     controller: App\Controller\VehicleController::createVehicle
+    methods: ['POST']
+
+create_table:
+    path: /api/vehicle/create-table
+    controller: App\Controller\VehicleController::createTable
     methods: ['POST']
 
 update_vehicle:
@@ -50,9 +76,25 @@ delete_vehicle:
     methods: ['DELETE']
 
 get_vehicle: 
-    path: /api/vehicle
+    path: /api/vehicle/{plateNumber}
     controller: App\Controller\VehicleController::getVehicle
     methods: ['GET']
+
+get_contracts_groupby_vehicle: 
+    path: /api/vehicle/contracts
+    controller: App\Controller\VehicleController::getContractsGroupByVehicle
+    methods: ['GET']
+
+get_contracts_from_vehicle: 
+    path: /api/vehicle/{vehicleId}/contracts
+    controller: App\Controller\VehicleController::getContractsFromVehicleId
+    methods: ['GET']
+
+get_late_time_on_average_per_vehicle:
+    path: /api/vehicle/contracts/late/on-average
+    controller: App\Controller\VehicleController::getLateTimeOnAverageByVehicle
+    methods: ['GET']
+
 
 # ----- CONTRACT -----
 
@@ -61,43 +103,78 @@ create_contract:
     controller: App\Controller\ContractController::createContract
     methods: ['POST']
 
+create_table_contract:
+    path: /api/contract/create-table
+    controller: App\Controller\ContractController::createTable
+    methods: ['POST']
+
 update_contract:
     path: /api/contract
     controller: App\Controller\ContractController::updateContract
     methods: ['PUT']
 
-
 delete_contract:
-    path: /api/contract
+    path: /api/contract/{contractId}
     controller: App\Controller\ContractController::deleteContract
     methods: ['DELETE']
 
-
-get_contracts:
-    path: /api/contract
-    controller: App\Controller\ContractController::getContracts
+get_unpaid_contracts:
+    path: /api/contract/is-paid
+    controller: App\Controller\ContractController::getUnpaidContracts
     methods: ['GET']
+
+get_late_contract:
+    path: /api/contract/late
+    controller: App\Controller\ContractController::getLateContracts
+    methods: ['GET']
+
+count_late_contract_between:
+    path: /api/contract/late/{intervalDate1}/{intervalDate2}
+    controller: App\Controller\ContractController::countLateContractBetween
+    methods: ['GET']
+
+check_contract_isPaid:
+    path: /api/contract/{contractId}/is-paid
+    controller: App\Controller\ContractController::checkContractIsPaid
+    methods: ['GET']
+
+get_contract_billings:
+    path: /api/contract/{contractId}/billings
+    controller: App\Controller\ContractController::getBillingsFromContractId
+    methods: ['GET']
+
+get_contract:
+    path: /api/contract/{contractId}
+    controller: App\Controller\ContractController::getContract
+    methods: ['GET']
+
 
 # ----- BILLING -----
 
 create_billing:
-    path: /api/billing
+    path: /api/billing/{idContrat}
     controller: App\Controller\BillingController::createBilling
     methods: ['POST']
 
+create_table_billing:
+    path: /api/billing/create-table
+    controller: App\Controller\BillingController::createTable
+    methods: ['POST']
+
 update_billing:
-    path: /api/billing
+    path: /api/billing/{billingId}
     controller: App\Controller\BillingController::updateBilling
     methods: ['PUT']
 
 delete_billing:
-    path: /api/billing
+    path: /api/billing/{billingId}
     controller: App\Controller\BillingController::deleteBilling
     methods: ['DELETE']
 
 get_billing:
-    path: /api/billing
+    path: /api/billing/{billingId}
     controller: App\Controller\BillingController::getBilling
+    methods: ['GET']
 
 # ---- auth -----
 
@@ -108,18 +185,16 @@ app_register:
 
 api_login_check:
     path: /api/login_check
-    controller: App\Controller\HomePageController::index
-    stateless: false
 
-app_login:
-    path: /login
+api_login:
+    path: /api/login
     controller: App\Controller\SecurityController::login
 
 app_logout:
     path: /logout
-    controller: App\Controller\SecurityController::logout
+    controller: App\Controller\LoginController::logout
 
-homepage:
-    path: /
-    controller: App\Controller\HomepageController::index
+app_login:
+    path: /login
+    controller: App\Controller\LoginController::login
 

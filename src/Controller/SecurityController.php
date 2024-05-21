@@ -1,35 +1,45 @@
 <?php
 
+// src/Controller/SomeController.php
 namespace App\Controller;
 
-use Psr\Log\LoggerInterface;
 use App\Service\Security\ApiTokenService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    #[Route(path: '/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, ApiTokenService $apiTokenService): JsonResponse
-    {
+    private $apiTokenService;
 
-        $token = $apiTokenService->getToken();
+    public function __construct(ApiTokenService $apiTokenService)
+    {
+        $this->apiTokenService = $apiTokenService;
+    }
+
+    #[Route('/api/login', name: 'api_login')]
+    public function login()
+    {
+        $token = $this->apiTokenService->getToken();
 
         if ($token) {
-            return $this->json(['token' => $token]);
-        } else {
-            return $this->json(['error' => 'Invalid credentials'], 401);
+            // Create a new Response object to set the cookie
+            $response = new Response('Login successful');
+            $response->headers->setCookie(new Cookie(
+                'token',
+                $token,
+                time() + (60 * 60),
+                '/',
+                null,
+                false,
+                true
+            ));
+            return new JsonResponse($token, Response::HTTP_OK, []);
         }
+
+        return new Response('Login failed', Response::HTTP_UNAUTHORIZED);
     }
 
-
-    #[Route(path: '/logout', name: 'app_logout')]
-    public function logout(): void
-    {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
-    }
 }

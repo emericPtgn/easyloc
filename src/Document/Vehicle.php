@@ -11,16 +11,27 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class Vehicle {
 
     #[MongoDB\Id]
+        /**
+     * @SerializedName("id")
+     */
     protected string $id;
 
     #[MongoDB\Field(type: 'string', name: 'plateNumber')]
+    /**
+     * @SerializedName("plateNumber")
+     */
     protected string $plateNumber = '' ;
 
     #[MongoDB\Field(type: 'string', name: 'informations')]
-    protected string $informations;
-
+        /**
+     * @SerializedName("informations")
+     */
+    protected string $informations = '';
     #[MongoDB\Field(type: 'int', name: 'km')]
-    protected int $km;
+            /**
+     * @SerializedName("km")
+     */
+    protected int $km = 0;
 
     /**
      * @var Collection<int, Contract>
@@ -31,6 +42,9 @@ class Vehicle {
     public function __construct()
     {
         $this->contracts = new ArrayCollection();
+        $this->plateNumber = '';
+        $this->informations = '';
+        $this->km = 0;
     }
 
     public function __toString() {
