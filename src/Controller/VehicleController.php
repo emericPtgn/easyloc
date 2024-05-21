@@ -22,9 +22,9 @@ class VehicleController extends AbstractController
     private $serializer;
 
     public function __construct(
-        VehicleService $vehicleService, // Injectez le service VehicleService
-        CustomHttpClient $customHttpClient, // Injectez le service CustomHttpClient
-        AuthorizationCheckerInterface $authorizationChecker, // Injectez le service AuthorizationCheckerInterface
+        VehicleService $vehicleService, 
+        CustomHttpClient $customHttpClient, 
+        AuthorizationCheckerInterface $authorizationChecker, 
         SerializerInterface $serializer
     ) {
         $this->vehicleService = $vehicleService;
@@ -33,7 +33,7 @@ class VehicleController extends AbstractController
         $this->serializer = $serializer;
     }
 
-
+    
     #[Route('/api/vehicle', name: 'create_vehicle', methods: ['POST'])]
     public function createVehicle(Request $request) : JsonResponse
     {
@@ -47,7 +47,7 @@ class VehicleController extends AbstractController
     public function createTable() {
         return $this->vehicleService->createCollection();
     }
-
+     
     #[Route('/api/vehicle/{vehicleId}', name: 'update_vehicle', methods: ['PUT'])]
     public function updateVehicle(Request $request, $vehicleId): JsonResponse {
         $requestDatas = json_decode($request->getContent(), true);

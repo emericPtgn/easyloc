@@ -5,9 +5,10 @@ namespace App\Controller;
 
 use App\Service\Security\ApiTokenService;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class SecurityController extends AbstractController
@@ -19,10 +20,13 @@ class SecurityController extends AbstractController
         $this->apiTokenService = $apiTokenService;
     }
 
-    #[Route('/api/login', name: 'api_login')]
-    public function login()
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function login(Request $request)
     {
-        $token = $this->apiTokenService->getToken();
+        $requestDatas = json_decode($request->getContent(), true);
+        $username = $requestDatas['username'];
+        $password = $requestDatas['password'];
+        $token = $this->apiTokenService->getToken($username, $password);
 
         if ($token) {
             // Create a new Response object to set the cookie

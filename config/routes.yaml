@@ -189,6 +189,7 @@ api_login_check:
 api_login:
     path: /api/login
     controller: App\Controller\SecurityController::login
+    methods: ['POST']
 
 app_logout:
     path: /logout

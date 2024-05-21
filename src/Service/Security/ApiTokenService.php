@@ -4,6 +4,7 @@
 namespace App\Service\Security;
 
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Mime\Email;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,12 +21,14 @@ class ApiTokenService
         $this->forward = HttpClient::createForBaseUri('http://localhost', [
             'verify_peer' => false,
             'verify_host' => false,
+            // certificat auto généré dans symfony
             'cafile' => __DIR__.'/Users/emericp/.symfony5/certs',
         ]);
     }
 
-    public function getToken(): ?string
+    public function getToken(string $username, string $password)
     {
+        // requête POST renvoi TOKEN au format JSON
         try {
             $response = $this->forward->request(
                 'POST',
@@ -35,8 +38,8 @@ class ApiTokenService
                         'Content-Type' => 'application/json',
                     ],
                     'json' => [
-                        'username' => 'petitgenet.emeric@gmail.com',
-                        'password' => 'MDP1995',
+                        'username' => $username,
+                        'password' => $password,
                     ],
                 ]
             );
