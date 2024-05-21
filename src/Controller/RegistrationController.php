@@ -25,6 +25,9 @@ class RegistrationController extends AbstractController
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
+        // formulaire de sign in 
+        // hash le password saisi
+        // envoi un email à l'utilisateur pour confirmer son email
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
@@ -62,6 +65,8 @@ class RegistrationController extends AbstractController
 
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
+    // gère la confirmation de l'email par l'utilisateur
+    // bloque cette route pour un utilisateur qui ne valide pas son email
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -78,10 +83,5 @@ class RegistrationController extends AbstractController
         $this->addFlash('success', 'Your email address has been verified.');
 
         return $this->redirectToRoute('app_login');
-    }
-
-    #[Route('/api/welcome', name: 'app_onboarding')]
-    public function onboarding(Request $request){
-        return $this->render('notemplate');
     }
 }

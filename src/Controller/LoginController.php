@@ -12,6 +12,7 @@ class LoginController extends AbstractController
 {
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
+    // rend un formulaire de login pour se connecter à l'application avec email et MDP
     {
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
@@ -19,18 +20,15 @@ class LoginController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        $token = $request->cookies->get('token');
-
-
         return $this->render('login/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'token' => $token
         ]);
     }
 
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
+        // rend un formulaire de logout pour se déconnecter de l'application
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }

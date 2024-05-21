@@ -4,10 +4,7 @@
 namespace App\Service\Security;
 
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Mime\Email;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class ApiTokenService
@@ -47,25 +44,7 @@ class ApiTokenService
             $data = $response->toArray();
             $token = $data['token'] ?? null;
 
-            if ($token) {
-                $cookie = new Cookie(
-                    'token',
-                    $token,
-                    time() + (60 * 60), // Expires in 1 hour
-                    '/', // Path
-                    null, // Domain
-                    false, // Secure
-                    true // HttpOnly
-                );
-
-                // Create a new Response object to set the cookie
-                $response = new Response();
-                $response->headers->setCookie($cookie);
-
-                return $token;
-            }
-
-            return null;
+            return $token;
         } catch (TransportExceptionInterface $e) {
             // Handle API connection errors
             dd($e->getMessage());

@@ -52,6 +52,11 @@ get_late_contract_average_rate_per_customer:
     controller: App\Controller\CustomerController::getLateContractOnAverage
     methods: ['GET']
 
+get_contracts_groupby_customer: 
+    path: /api/customers/contracts
+    controller: App\Controller\VehicleController::getContractsGroupByCustomer
+    methods: ['GET']
+
 
 # ------ VEHICLE ------
 

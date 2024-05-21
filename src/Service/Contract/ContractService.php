@@ -4,8 +4,6 @@ namespace App\Service\Contract;
 use App\Repository\ContractRepository;
 use DateTime;
 use App\Entity\Contract;
-use App\Document\Vehicle;
-use App\Document\Customer;
 use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
@@ -27,6 +25,7 @@ class ContractService {
 
     public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, 
     Connection $connection, LoggerInterface $logger, DocumentManager $dm, ContractRepository $contractRepo){
+        // initialise les dépendances du service
         $this->em = $em;
         $this->serializer = $serializer;
         $this->connection = $connection;
@@ -37,9 +36,11 @@ class ContractService {
 
     public function createTable() 
     {
+        // à partir de la connection indiquée au doctrine.yaml, je vérifie pour cette connexion si la table contract existe
         $schemaTable = $this->connection->getSchemaManager();
         $tableName = 'contract';
         $tableExist = $schemaTable->tablesExist([$tableName]);
+        // créer la table si elle n 'existe pas 
         if(!$tableExist){
             $schema = new Schema();
             $table = $schema->createTable($tableName);
@@ -56,16 +57,23 @@ class ContractService {
             $table->addForeignKeyConstraint('Customer', ['customerId'], ['id'] );
 
             $queries = $schema->toSql($this->connection->getDatabasePlatform());
+            // appelle la méthode toSql sur l'objet schema => renvoi un tableau contenant les requêtes nécessaires pour créer  le schéma
+            // pour la connexion par défault indiquée au doctrine.yaml
             foreach ($queries as $query) {
+                // execute pour cette connexion le tbleau de requête $queries
+                // retourne réponse succès 
                 $this->connection->executeStatement($queries);
             }
             return ('Table created successfully');
         }
+        // retourne réponse si table existe dEJA
         return ('Table already exist');
     }
 
     public function createContract(string $vehicleId, string $customerId, array $contractDatas) 
     {
+        // paramètres transmis par le controlleur
+        // vérifie si les champs du tableau $contractDatas sont null
         $contract = new Contract();
         $contract->setCustomerId($customerId);
         $contract->setVehicleId($vehicleId);
@@ -88,12 +96,18 @@ class ContractService {
         if(isset($contractDatas['price'])){
             $contract->setPrice($contractDatas['price']);
         }
+        // persiste les données
         $this->em->persist($contract);
         $this->em->flush();
+        // retourne l'objet contrat
         return $contract;
     }   
 
-    public function updateContract(string $contractId, array $updateContent){
+
+    public function updateContract(string $contractId, array $updateContent)
+    {
+        // recherche l'enregistrement à mettre à jour 
+        // si un champs du tableau updateContent est vide, passer au champs suivant 
         $contract = $this->contractRepo->find($contractId);
         if(isset($updateContent['vehicleId'])){
             $contract->setVehicleId($updateContent['vehicleId']);
@@ -123,31 +137,39 @@ class ContractService {
         if(isset($updateContent['price'])){
             $contract->setPrice($updateContent['price']);
         }
+        // persiste les données
         $this->em->persist($contract);
         $this->em->flush();
+        // retourne un objet contrat
         return $contract;
     }
 
     public function deleteContract(Request $request, string $contractId)
     {
+        // essaie : recherche le contrat à partir contractId - supprime ce contrat - persiste le changement
         try {
             $contract = $this->contractRepo->find($contractId);
             $this->em->remove($contract);
             $this->em->flush();
             return ('contract ID ' . $contractId . ' delete successfully');
-        } catch (\Throwable $th) {
+        } // sinon affiche l'erreur  
+        catch (\Throwable $th) {
             throw $th;
         }
     }
 
     public function getContract(string $contractId) 
     {
+        // recherche ce contrat et affiche ce contrat
         $contract = $this->contractRepo->find($contractId);
         return $contract;
     }
 
     public function getLateContracts() 
     {
+        // prends la liste de TOUS les contrats
+        // prends la date du jour
+        // pour chaque contrat, si il est déclaré en retard (isLateContrat => true), alors ajouter contrat au tableau lateContracts
         $contracts = $this->contractRepo->findAll();
         $lateContracts = [];
         $todaysDate = new DateTime();
@@ -156,21 +178,24 @@ class ContractService {
                 $lateContracts[] = $contract;
             }
         }
-/*         if($request->query->get('by') || $request->query->get('on')){
-            return $this->getLateContractsOnBy($request, $lateContracts);
-        }  */
+        // retourne le tableau 
         return $lateContracts;
     }
 
     public function isLateContract(Contract $contract){
+        // fonction d'assistance -> prends un objet contrat en prop
         $returningDateTime = $contract->getReturningDateTime();
         $locEndDateTime = $contract->getLocEndDateTime();
         $now = new DateTime();
         $isLate = false;
-        if( (is_null($returningDateTime)) && ($now->diff($locEndDateTime)->h >= 1) && ($now > $locEndDateTime) ){
+        // un contrat est en retard SI (2 options)
+       
+        if(  // - sa date de retour est null + date de fin du contrat est passée + delta au moins de 1h entre date/heure actuelle v
+            (is_null($returningDateTime)) && ($now->diff($locEndDateTime)->h >= 1) && ($now > $locEndDateTime) ){
             $isLate = true;
             return $isLate;
-        } elseif ( ($returningDateTime) && ($returningDateTime->diff($locEndDateTime)->h >= 1) ){
+        } elseif   // - date de retour non null + delta de au moins 1h entre date/heure actuelle et date de retour
+        ( ($returningDateTime) && ($returningDateTime->diff($locEndDateTime)->h >= 1) ){
             $isLate = true;
             return $isLate;
         } else { 
@@ -179,7 +204,7 @@ class ContractService {
     }
 
     public function getBillingsFromContractId(string $contractId)
-    {
+    {   
         $contract = $this->contractRepo->find($contractId);
         $billings = $contract->getBillings();
         return $billings;
@@ -188,6 +213,11 @@ class ContractService {
 
     public function checkContractIsPaid(string $contractId)
     {
+        // détermine si un contrat est payé 
+        // 1) calcul somme totale des factures 
+        // 2) calcul reste à payer (tarif contrat - somme totale facture)
+        // 3) si reste à payer == 0 alors payé
+        // ** affiche reste à payer le cas échéant **
         $contract = $this->contractRepo->find($contractId);
         if (!$contract) {
             throw new \Exception('Contract not found');
@@ -212,6 +242,9 @@ class ContractService {
 
     public function getUnpaidContracts()
     {
+        // initialiser tableau vide (répertorie les contrat non payés)
+        // boucler sur liste avec tous les contrats
+        // si function boolen retourne FALSE alors ajouter contrat au tableau
         $contracts = $this->contractRepo->findAll();
         $unPaidContracts = [];
 
@@ -229,6 +262,9 @@ class ContractService {
 
 public function countLateContractBetween(string $intervalDate1, string $intervalDate2)
 {
+    // initialise tableau vide (repertorie les contrat en retard (locations) sur une période donnée
+    // si fonction booléenne retourne true alors ajouter contrat au tableau
+    // retourner le compte du nombre de contrat en retart
     $contracts = $this->contractRepo->findAll();
     $intervalDate1 = new DateTime($intervalDate1);
     $intervalDate2 = new DateTime($intervalDate2);
@@ -244,30 +280,17 @@ public function countLateContractBetween(string $intervalDate1, string $interval
 
     public function getContractsFromVehicleId(string $vehicleId, Request $request)
     {
+        // rechercher correspondance dans repository vehicle à partir de l'ID vehicle 
         $contracts = $this->em->getRepository(Contract::class)->findBy(['vehicleId' => $vehicleId]);
         if(!$contracts){
             throw new NotFoundHttpException('no contracts found');
         }
+        // convertir l'objet contrat en JSON 
+        // traite la référence circulaire à l'aide de la propriété groups
+        // retourne une réponse au format JSON
+        // true indique que la donnée est du JSON
         $serializedContracts = $this->serializer->serialize($contracts, 'json', ['groups' => ['contract', 'billing']]);
         return new JsonResponse($serializedContracts, Response::HTTP_OK, [], true);
     }
 
-
-private function convertTimeToMinutes($time)
-{
-    list($days, $hours, $minutes) = explode(':', $time);
-    $days = (int)$days;
-    $hours = (int)$hours;
-    $minutes = (int)$minutes;
-    return ($days * 24 * 60) + ($hours * 60) + $minutes;
 }
-
-private function convertMinutesToTime($minutes)
-{
-    $hours = floor($minutes / 60);
-    $minutes = $minutes % 60;
-    return sprintf('%02d:%02d', $hours, $minutes);
-}
-
-}
-

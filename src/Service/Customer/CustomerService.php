@@ -5,18 +5,12 @@ use DateTime;
 use App\Entity\Contract;
 use App\Document\Customer;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\Connection;
 use InvalidArgumentException;
-use Doctrine\DBAL\Schema\Schema;
 use App\Repository\ContractRepository;
 use App\Service\Contract\ContractService;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Doctrine\ODM\MongoDB\Mapping\Annotations\Collection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CustomerService {
@@ -27,19 +21,12 @@ class CustomerService {
     private $contractRepo;
 
     public function __construct(DocumentManager $dm, EntityManagerInterface $em, SerializerInterface $serializer, Connection $connection, ContractRepository $contractRepo){
+        // initialise les dépendances du customer Service
         $this->dm = $dm;
         $this->em = $em;
         $this->serializer = $serializer;
         $this->connection = $connection;
         $this->contractRepo = $contractRepo;
-    }
-
-    public function getCustomerList() : JsonResponse {
-        $customers = $this->dm->getRepository(Customer::class)->findAll();
-        // Sérialise les objets Customer en utilisant le serializer
-        $serializedCustomers = $this->serializer->serialize($customers, 'json');
-        // Retourne la réponse JSON
-        return new JsonResponse($serializedCustomers, Response::HTTP_OK, [], true);
     }
 
     public function collectionExist(string $collectionName) : bool
@@ -106,38 +93,53 @@ class CustomerService {
         return $customer;
     }
 
-    public function deleteCustomer($customerId) 
+    public function deleteCustomer(string $customerId) 
     {
+        // recherche l'objet customer via correspondance à partir de l'ID customer
+        // i
         $customer = $this->dm->getRepository(Customer::class)->find($customerId);
         if (!$customer) {
             throw new InvalidArgumentException('Customer not found for ID ' . $customerId);
         }
         $this->dm->remove($customer);
         $this->dm->flush();
+        // retourne un tableau json
         return ['message' => 'operation successfull : customer deleted'];
     }
 
-    // recherche client à partir du nom / prénom passé en paramètres au controlleur
+    
     public function getCustomer(string $firstName, string $lastName)
     {
+        // recherche client à partir du nom / prénom passé en paramètres au controlleur
         $customer = $this->dm->getRepository(Customer::class)->findOneBy(['firstName' => $firstName, 'lastName' => $lastName]);
         if(!$customer){
             throw new NotFoundHttpException('no customer found with firstname : ' . $firstName . 'and lastname : '. $lastName);
         }
+        // retourne un objet php
         return $customer;
     }
         
 
     public function getContractFromCustomerId(string $customerId)
     {
+        // recherche contrat dans le repo contract à l'aide d'une recherche par correspondance avec le customerId
         $contractList = $this->contractRepo->findBy(['customerId' => $customerId]);
+        // retourne un objet PHP
         return $contractList;
     }
 
     public function getCurrentContractsFromCustomer(array $contracts) 
     {
+        // initialise l'objet DateTime
         $todaysDate = new DateTime();
+        // initialise un tableau vide
         $onGoingContracts = [];
+        // boucle sur chaque contrat
+        // détermine si contrat est "en cours"
+        // contrat est "en cours" si :
+        // DATE DEBUT est passée et DATE FIN est à venir
+        // si contrat "en cours"
+        // ajouter contrat à tableau onGoingContracts
         foreach ($contracts as $contract) {
             $locBeginDatetime = $contract->getLocBeginDateTime();
             $locEndDateTime = $contract->getLocEndDateTime();
@@ -145,6 +147,7 @@ class CustomerService {
                 $onGoingContracts[] = $contract;
             }
         }
+        // si AUCUN contrat dans TOUS LES CONTRAT ACTUELS, alors retourner "no ongoing contract found"
         if(empty($onGoingContracts)){
             return ('No ongoing contract found');
         }
@@ -153,30 +156,45 @@ class CustomerService {
 
     public function getLateContractsOnAverageByCustomer(ContractService $contractService)
     {
+        // à partir d'une liste de TOUS LES CONTRATS
         $contracts = $this->contractRepo->findAll();
+        // à partir d'une liste de TOUS LES CLIENTS
         $customers = $this->dm->getRepository(Customer::class)->findAll();
-    
+        // initialiser un tableau vide qui accueillera les données mises à jour
         $customersWithAverage = [];
     
+        // boucle 1 -> pour chaque client
+        // initialise un totalContratsEnRetard = 0;
+        // initialise un totalContra = 0;
+
         foreach ($customers as $customer) {
             $totalLateContracts = 0;
             $totalContracts = 0;
-    
+            // boucle 2 -> pour chaque contrat
             foreach ($contracts as $contract) {
+                // condition 1 => recherche correspondance entre iD client et customerId du contrat, si correspondance => entrer dans condition suivante
                 if($customer->getId() === $contract->getCustomerId()){
+                    // si condition 1 respectée
+                    // condition 2 => déterminer si contrat est EN RETARD 
+                    // contrat en retard si fonction booléenne isLateContract renvoie TRUE
                     if($contractService->isLateContract($contract) == true){
+                        // si condition 2 respectée, incrémenter 1 à totalLateContracts
                         $totalLateContracts += 1;
                     }
                     $totalContracts += 1;
-                }
-            }
-    
+                    // si condition 2 pas respectée, incrémenter 1 à totalContract
+                } // sortir de la condition 1
+            } // sortir de la boucle 2
+            
+            // le code poursuit la boucle 1 -> pour chaque client
             if($totalContracts > 0) {
+                // si le client possède des contrats, calculer le taux de contrat déclarés "en retard" 
                 $averageLateContracts = ($totalLateContracts / $totalContracts * 100) . '%';
             } else {
+                // si le client ne possède AUCUN contrat, indiquer 0%
                 $averageLateContracts = '0%';
             }
-    
+            // initialise un tableau avec les infos clients + taux de retard
             $customerDatas = [
                 "id" => $customer->getId(),
                 "firstName" => $customer->getFirstName(),
@@ -184,32 +202,32 @@ class CustomerService {
                 "adress" => $customer->getAdress(),
                 "is late on average" => $averageLateContracts
             ];
-    
+            // ajouter le tableau au tableau vide initialisé en début de fonction
             $customersWithAverage[] = $customerDatas;
+            // sortir de la boucle 1
         }
-    
+        // retourner une réponse de valeur PHP de type tableau
         return $customersWithAverage;
     }
 
-    public function getContractsByCustomers(Request $request)
+    public function getContractsGroupByCustomer()
 {
+    // instancier le QUERY BUILDER
     $qb = $this->em->createQueryBuilder();
-
+    // définir la requête
+    // afficher les contrats regroupés par client
     $qb->select('c')
         ->from(Contract::class, 'c')
         ->orderBy('c.customerId', 'ASC');
-
     $query = $qb->getQuery();
-
+    // obtenir le résultat de la requête
     $contracts = $query->getResult();
-
+    // initialiser un tableau vide
     $contractsByCustomers = [];
-
     // Regrouper les contrats par client
     foreach ($contracts as $contract) {
         $customerId = $contract->getCustomerId();
         $customerName = 'customer' . $customerId;
-
         // Vérifier si le client existe déjà dans le tableau, sinon le créer
         if (!isset($contractsByCustomers[$customerName])) {
             $contractsByCustomers[$customerName] = [
@@ -217,18 +235,9 @@ class CustomerService {
                 'contracts' => [], // Initialiser le tableau des contrats pour ce client
             ];
         }
-
         // Ajouter le contrat au tableau des contrats du client
         $contractsByCustomers[$customerName]['contracts'][] = $contract;
     }
-
-    // Sérialiser les résultats en JSON
-    $serializedResults = $this->serializer->serialize($contractsByCustomers, 'json', [
-        'groups' => ["contract", "billing"]
-    ]);
-
-    return new JsonResponse($serializedResults, Response::HTTP_OK, [], true);
+    return $contractsByCustomers;
 }
-
-
 }
