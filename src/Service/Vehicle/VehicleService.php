@@ -8,11 +8,7 @@ use App\Document\Vehicle;
 use App\Service\Security\ApiTokenService;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Doctrine\ODM\MongoDB\Mapping\Annotations\Collections;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
@@ -118,7 +114,7 @@ class VehicleService {
         // enregistrer les changements
         $this->dm->flush();
         // reoturner un message 
-        return ['message' => 'operation succed, the vehicle ' . $vehicleId. 'has been deleted'];
+        return 'vehicle deleted';
     }
 
     public function getVehicle(string $plateNumber)
@@ -129,22 +125,30 @@ class VehicleService {
         return $vehicle;
     }
 
-    public function countVehicle($km)
-    {
-        // Vérifier si la valeur du paramètre est numérique
-        if (!is_numeric($km)) {
-            throw new \InvalidArgumentException('The filter value must be numeric.');
-        }
-        // Convertir la valeur en entier
-        $filterValue = (int)$km;
-        
-        // Utiliser la valeur filtrée pour rechercher les véhicules
-        $qb = $this->dm->createQueryBuilder(Vehicle::class)
-        ->field('km')->gte($km);
-        $query = $qb->getQuery();
-        $vehicles = $query->execute();
-        return $vehicles;
+    public function countVehicle($km): int
+{
+    // Vérifier si la valeur du paramètre est numérique
+    if (!is_numeric($km)) {
+        throw new \InvalidArgumentException('The filter value must be numeric.');
     }
+    // Convertir la valeur en entier
+    $filterValue = (int)$km;
+    
+    // Utiliser la valeur filtrée pour rechercher les véhicules
+    $qb = $this->dm->createQueryBuilder(Vehicle::class)
+        ->field('km')->gte($km);
+    $query = $qb->getQuery();
+    
+    // Exécuter la requête et obtenir le curseur
+    $cursor = $query->execute();
+    
+    // Compter le nombre de véhicules
+    $count = $cursor->count();
+    
+    return $count;
+}
+
+
     
     public function getLateTimeOnAverageByVehicle()
 {
@@ -210,7 +214,7 @@ class VehicleService {
             "informations" => $vehicle->getInformations(),
             "plateNumber" => $vehicle->getPlateNumber(),
             "km" => $vehicle->getKm(),
-            "is late on average (h:m)" => $this->convertMinutesToTime($averageTimeLate)
+            "late_on_average" => $this->convertMinutesToTime($averageTimeLate)
         ];
         // ajouter le tableau du vehicule au tableau principal qui répertorie tous les vehicuels utilisés en location
         $vehiclesWithAverageTimeLate[] = $datasVehicles;

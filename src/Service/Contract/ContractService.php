@@ -144,7 +144,7 @@ class ContractService {
         return $contract;
     }
 
-    public function deleteContract(Request $request, string $contractId)
+    public function deleteContract(string $contractId)
     {
         // essaie : recherche le contrat à partir contractId - supprime ce contrat - persiste le changement
         try {
@@ -276,21 +276,5 @@ public function countLateContractBetween(string $intervalDate1, string $interval
     };
     return count($lateContractsBetween);
 }
-
-
-    public function getContractsFromVehicleId(string $vehicleId, Request $request)
-    {
-        // rechercher correspondance dans repository vehicle à partir de l'ID vehicle 
-        $contracts = $this->em->getRepository(Contract::class)->findBy(['vehicleId' => $vehicleId]);
-        if(!$contracts){
-            throw new NotFoundHttpException('no contracts found');
-        }
-        // convertir l'objet contrat en JSON 
-        // traite la référence circulaire à l'aide de la propriété groups
-        // retourne une réponse au format JSON
-        // true indique que la donnée est du JSON
-        $serializedContracts = $this->serializer->serialize($contracts, 'json', ['groups' => ['contract', 'billing']]);
-        return new JsonResponse($serializedContracts, Response::HTTP_OK, [], true);
-    }
 
 }

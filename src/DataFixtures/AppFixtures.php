@@ -2,35 +2,61 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\User;
+use App\Entity\Billing;
+use App\Entity\Contract;
+use App\Document\Vehicle;
+use App\Document\Customer;
 use Doctrine\Persistence\ObjectManager;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class AppFixtures extends Fixture
+class AppFixtures extends Fixture implements FixtureGroupInterface
 {
-
-    private $userPasswordHasher;
-
-    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
-    {
-        $this->userPasswordHaser = $userPasswordHasher;
-    }
 
     public function load(ObjectManager $manager): void
     {
+        // Create clients
+        $customer = new Customer();
+        $customer->setId('664dd118ac4ff014ff080396');
+        $customer->setAdress('1 rue du pleutre bruxelles 1000');
+        $customer->setFirstName('patrick');
+        $customer->setLastName('montaigu');
+        $customer->setPermitNumber('123002');
+        $manager->persist($customer);
+        $manager->flush();
 
-        $user = new User();
-        $user->setEmail("user@easylocapi.fr");
-        $user->setRoles(['ROLE_USER']);
-        $user->setPassword($this->userPasswordHasher->hasPassword($user, "StrongestAssword"));
-        $manager->persist($user);
+        $customer2 = new Customer();
+        $customer2->setId('664dd118ac4ff014ff080397');
+        $customer2->setAdress('820B avenue du président 75000 paris');
+        $customer2->setFirstName('zackaria');
+        $customer2->setLastName('zaziot');
+        $customer2->setPermitNumber('844622');
+        $manager->persist($customer2);
+        $manager->flush();
 
-        $userAdmin = new User();
-        $userAdmin->setEmail("useradmin@easylocapi.fr");
-        $userAdmin->setRoles(['ROLE_ADMIN']);
-        $userAdmin->setPassword($this->userPasswordHasher->hasPassword($userAdmin, "ThisMDPistheStrongesta**word"));
-        $manager->persist($userAdmin);
+        $vehicle = new Vehicle();
+        $vehicle->setId('664dd594b23d381f0f2933e4');
+        $vehicle->setInformations('excellent état');
+        $vehicle->setKm(1000);
+        $vehicle->setPlateNumber("rre007");
+        $manager->persist($vehicle);
+        $manager->flush();
 
+        $vehicle2 = new Vehicle();
+        $vehicle2->setId('664dd5cfb23d381f0f2933e5');
+        $vehicle2->setInformations('mauvais état');
+        $vehicle2->setKm(300000);
+        $vehicle2->setPlateNumber("lkk789");
+        $manager->persist($vehicle2);
+        $manager->flush();
+
+    }
+    /**
+     * This method must return an array of groups
+     * on which the implementing class belongs to
+     * @return string[]
+     */
+    public static function getGroups(): array {
+        return ['test'];
     }
 }

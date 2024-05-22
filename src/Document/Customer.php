@@ -62,9 +62,10 @@ class Customer
         return $this->id;
     }
 
-    public function setId(string $id): void
+    public function setId(string $id): static
     {
         $this->id = $id;
+        return $this;
     }
 
     public function getFirstName(): string

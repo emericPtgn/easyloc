@@ -2,18 +2,19 @@
 
 namespace App\Repository;
 
-use App\Entity\Vehicle;
+use \App\Document\Vehicle;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
- * @extends ServiceEntityRepository<Vehicle>
+ * @extends ServiceEntityRepository<\App\Document\Vehicle>
  */
 class VehicleRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, DocumentManager $documentManager)
     {
-        parent::__construct($registry, Vehicle::class);
+        parent::__construct($registry, \App\Document\Vehicle::class);
     }
 
     //    /**

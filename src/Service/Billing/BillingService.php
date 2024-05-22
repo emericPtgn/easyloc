@@ -8,11 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BillingService {
     private $em;
@@ -62,7 +58,7 @@ class BillingService {
     }
 
 
-    public function createBilling($idContrat, $montant) 
+    public function createBilling(string $idContrat, $montant) 
     {
 
         $contract = $this->em->getRepository(Contract::class)->find($idContrat);

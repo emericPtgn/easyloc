@@ -54,9 +54,16 @@ class Vehicle {
     public function getId(){
         return $this->id;
     }
+    
+    public function setId($id) : static {
+        $this->id = $id; 
+        return $this;
+    }
+    
     public function getPlateNumber(){
         return $this->plateNumber;
     }
+    
     public function setPlateNumber($plateNumber){
         $this->plateNumber = $plateNumber;
     }

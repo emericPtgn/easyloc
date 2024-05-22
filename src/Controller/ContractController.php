@@ -75,7 +75,7 @@ class ContractController extends AbstractController
         // service retourne chaîne de caractère
         // controlleur retourne la réponse du service
         $contractId = $request->query->get('contractId');
-        $response = $this->contractService->deleteContract($request, $contractId);
+        $response = $this->contractService->deleteContract($contractId);
         return new Response ($response, Response::HTTP_OK, []);
     }
 
