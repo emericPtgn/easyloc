@@ -12,6 +12,8 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
 class AppFixtures extends Fixture implements FixtureGroupInterface
 {
+    private ?string $customerId = null;
+    private ?string $vehicleId = null;
 
     public function load(ObjectManager $manager): void
     {
@@ -24,6 +26,7 @@ class AppFixtures extends Fixture implements FixtureGroupInterface
         $customer->setPermitNumber('123002');
         $manager->persist($customer);
         $manager->flush();
+        $this->customerId = $customer->getId();
 
         $customer2 = new Customer();
         $customer2->setId('664dd118ac4ff014ff080397');
@@ -41,6 +44,7 @@ class AppFixtures extends Fixture implements FixtureGroupInterface
         $vehicle->setPlateNumber("rre007");
         $manager->persist($vehicle);
         $manager->flush();
+        $this->vehicleId = $vehicle->getId();
 
         $vehicle2 = new Vehicle();
         $vehicle2->setId('664dd5cfb23d381f0f2933e5');
@@ -50,7 +54,29 @@ class AppFixtures extends Fixture implements FixtureGroupInterface
         $manager->persist($vehicle2);
         $manager->flush();
 
+
+
     }
+
+    public function setCustomerId(string $customerId): void
+    {
+        $this->customerId = $customerId;
+    }
+
+    public function getCustomerId(): ?string
+    {
+        return $this->customerId;
+    }
+    public function setVehicleId(string $vehicleId): void
+    {
+        $this->vehicleId = $vehicleId;
+    }
+
+    public function getVehicleId(): ?string
+    {
+        return $this->vehicleId;
+    }
+
     /**
      * This method must return an array of groups
      * on which the implementing class belongs to

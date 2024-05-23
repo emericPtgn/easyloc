@@ -262,17 +262,30 @@ public function getContractsGroupByVehicle()
 }
 
 
-private function convertTimeToMinutes($time)
+public function convertTimeToMinutes($time)
 {
-    // fonction qui isoles les jours/heures/minutes et converti les ensemble en minutes pour autoriser les calculs de temps
-    list($days, $hours, $minutes) = explode(':', $time);
+    $parts = explode(':', $time);
+
+    if (count($parts) === 2) {
+        // Format HH:MM
+        list($hours, $minutes) = $parts;
+        $days = 0; // Pas de jours dans ce format
+    } elseif (count($parts) === 3) {
+        // Format DD:HH:MM
+        list($days, $hours, $minutes) = $parts;
+    } else {
+        throw new \InvalidArgumentException("Invalid time format. Expected HH:MM or DD:HH:MM.");
+    }
+
     $days = (int)$days;
     $hours = (int)$hours;
     $minutes = (int)$minutes;
+
     return ($days * 24 * 60) + ($hours * 60) + $minutes;
 }
 
-private function convertMinutesToTime($minutes)
+
+public function convertMinutesToTime($minutes)
 {
     // fonction converti une valeur en minute en valeur heure / minute
     $hours = floor($minutes / 60);

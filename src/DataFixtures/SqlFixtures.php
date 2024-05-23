@@ -84,6 +84,22 @@ class SqlFixtures extends Fixture implements FixtureGroupInterface
         $manager->persist($contract3);
         $manager->flush();
 
+        $contract4 = new Contract();
+        $contract4->setId(4);
+        $contract4->setCustomerId($idCustomer);
+        $contract4->setVehicleId($idVehicle2);
+        $signDateTime = new \DateTime('2024-05-18 12:00:00');
+        $locBeginDateTime = new \DateTime('2024-05-18 13:00:00');
+        $locEndDateTime = new \DateTime('2024-05-22 08:00:00');
+        $returningDateTime = new \DateTime('2024-05-22 10:00:00');
+        $contract4->setReturningDateTime($returningDateTime);
+        $contract4->setLocBeginDateTime($locBeginDateTime);
+        $contract4->setLocEndDateTime($locEndDateTime);
+        $contract4->setSignDateTime($signDateTime);
+        $contract4->setPrice(450);
+        $manager->persist($contract4);
+        $manager->flush();
+
         // Create billings in SQL
         $billing = new Billing();
         $billing->setId(1);

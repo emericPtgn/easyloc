@@ -147,10 +147,6 @@ class CustomerService {
                 $onGoingContracts[] = $contract;
             }
         }
-        // si AUCUN contrat dans TOUS LES CONTRAT ACTUELS, alors retourner "no ongoing contract found"
-        if(empty($onGoingContracts)){
-            return ('No ongoing contract found');
-        }
         return $onGoingContracts;
     }
 
@@ -196,14 +192,14 @@ class CustomerService {
             }
             // initialise un tableau avec les infos clients + taux de retard
             $customerDatas = [
-                "id" => $customer->getId(),
+                // "id" => $customer->getId(),
                 "firstName" => $customer->getFirstName(),
                 "lastName" => $customer->getLastName(),
                 "adress" => $customer->getAdress(),
-                "is late on average" => $averageLateContracts
+                "late_on_average" => $averageLateContracts
             ];
             // ajouter le tableau au tableau vide initialisé en début de fonction
-            $customersWithAverage[] = $customerDatas;
+            $customersWithAverage["id".$customer->getId()] = $customerDatas;
             // sortir de la boucle 1
         }
         // retourner une réponse de valeur PHP de type tableau
@@ -230,8 +226,9 @@ class CustomerService {
         $customerName = 'customer' . $customerId;
         // Vérifier si le client existe déjà dans le tableau, sinon le créer
         if (!isset($contractsByCustomers[$customerName])) {
+            $customer = $this->dm->getRepository(Customer::class)->find($customerId);
             $contractsByCustomers[$customerName] = [
-                'customer_info' => $contract->getCustomer(), // Ajouter les informations sur le client si nécessaire
+                'customer_info' => $customer, // Ajouter les informations sur le client si nécessaire
                 'contracts' => [], // Initialiser le tableau des contrats pour ce client
             ];
         }
